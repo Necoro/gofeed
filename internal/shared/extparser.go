@@ -1,11 +1,20 @@
 package shared
 
 import (
+	"slices"
 	"strings"
 
-	"github.com/mmcdole/gofeed/extensions"
-	"github.com/mmcdole/goxpp"
+	ext "github.com/mmcdole/gofeed/extensions"
+	xpp "github.com/mmcdole/goxpp"
 )
+
+var knownPrefixes = []string{
+	"rss",
+	"rdf",
+	"content",
+	"atom",
+	"atom03",
+}
 
 // IsExtension returns whether or not the current
 // XML element is an extension element (if it has a
@@ -13,7 +22,12 @@ import (
 func IsExtension(p *xpp.XMLPullParser) bool {
 	space := strings.TrimSpace(p.Space)
 	prefix := PrefixForNamespace(space, p)
-	return !(prefix == "" || prefix == "rss" || prefix == "rdf" || prefix == "content")
+
+	if prefix == "" {
+		return false
+	}
+
+	return !slices.Contains(knownPrefixes, prefix)
 }
 
 // ParseExtension parses the current element of the
@@ -118,6 +132,8 @@ func PrefixForNamespace(space string, p *xpp.XMLPullParser) string {
 // These canonical prefixes override any prefixes used in the feed itself.
 var canonicalNamespaces = map[string]string{
 	"http://webns.net/mvcb/":                                         "admin",
+	"http://www.w3.org/2005/Atom":                                    "atom",
+	"http://purl.org/atom/ns#":                                       "atom03",
 	"http://purl.org/rss/1.0/modules/aggregation/":                   "ag",
 	"http://purl.org/rss/1.0/modules/annotate/":                      "annotate",
 	"http://media.tangent.org/rss/1.0/":                              "audio",
