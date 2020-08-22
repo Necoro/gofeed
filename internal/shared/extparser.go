@@ -16,15 +16,26 @@ var knownPrefixes = []string{
 	"atom03",
 }
 
+type ExtParser interface {
+	ParseAsExtension(p *xpp.XMLPullParser) (interface{}, error)
+}
+
+type ExtParsers map[string]ExtParser
+
 // IsExtension returns whether or not the current
 // XML element is an extension element (if it has a
 // non empty prefix)
-func IsExtension(p *xpp.XMLPullParser) bool {
+func IsExtension(p *xpp.XMLPullParser, extParsers ExtParsers) bool {
 	space := strings.TrimSpace(p.Space)
 	prefix := PrefixForNamespace(space, p)
 
 	if prefix == "" {
 		return false
+	}
+
+	// we have an extension parser for this, so we treat it as an extension
+	if _, ok := extParsers[prefix]; ok {
+		return true
 	}
 
 	return !slices.Contains(knownPrefixes, prefix)
@@ -33,10 +44,16 @@ func IsExtension(p *xpp.XMLPullParser) bool {
 // ParseExtension parses the current element of the
 // XMLPullParser as an extension element and updates
 // the extension map
-func ParseExtension(fe ext.Extensions, p *xpp.XMLPullParser) (ext.Extensions, error) {
+func ParseExtension(fe ext.Extensions, p *xpp.XMLPullParser, extParsers ExtParsers) (ext.Extensions, error) {
 	prefix := PrefixForNamespace(p.Space, p)
 
-	result, err := parseExtensionElement(p)
+	var result ext.Extension
+	var err error
+	if extParser, ok := extParsers[prefix]; ok {
+		result, err = parseExtensionFromParser(p, extParser)
+	} else {
+		result, err = parseExtensionElement(p)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -52,6 +69,23 @@ func ParseExtension(fe ext.Extensions, p *xpp.XMLPullParser) (ext.Extensions, er
 
 	fe[prefix][p.Name] = append(fe[prefix][p.Name], result)
 	return fe, nil
+}
+
+func parseExtensionFromParser(p *xpp.XMLPullParser, extParser ExtParser) (e ext.Extension, err error) {
+	if err = p.Expect(xpp.StartTag, "*"); err != nil {
+		return e, err
+	}
+
+	e.Name = p.Name
+	if e.Parsed, err = extParser.ParseAsExtension(p); err != nil {
+		return e, err
+	}
+
+	if err = p.Expect(xpp.EndTag, e.Name); err != nil {
+		return e, err
+	}
+
+	return e, nil
 }
 
 func parseExtensionElement(p *xpp.XMLPullParser) (e ext.Extension, err error) {
