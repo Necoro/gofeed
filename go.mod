@@ -1,4 +1,4 @@
-module github.com/mmcdole/gofeed
+module github.com/Necoro/gofeed
 
 go 1.19
 
