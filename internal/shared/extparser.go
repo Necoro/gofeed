@@ -4,7 +4,7 @@ import (
 	"slices"
 	"strings"
 
-	ext "github.com/mmcdole/gofeed/extensions"
+	ext "github.com/Necoro/gofeed/extensions"
 	xpp "github.com/mmcdole/goxpp"
 )
 

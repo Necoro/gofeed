@@ -6,12 +6,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Necoro/gofeed/atom"
+	ext "github.com/Necoro/gofeed/extensions"
+	"github.com/Necoro/gofeed/internal/shared"
+	"github.com/Necoro/gofeed/json"
+	"github.com/Necoro/gofeed/rss"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/mmcdole/gofeed/atom"
-	ext "github.com/mmcdole/gofeed/extensions"
-	"github.com/mmcdole/gofeed/internal/shared"
-	"github.com/mmcdole/gofeed/json"
-	"github.com/mmcdole/gofeed/rss"
 	"golang.org/x/net/html"
 )
 
@@ -27,7 +27,7 @@ type Translator interface {
 // This default implementation defines a set of
 // mapping rules between rss.Feed -> Feed
 // for each of the fields in Feed.
-type DefaultRSSTranslator struct{
+type DefaultRSSTranslator struct {
 	atomTranslator DefaultAtomTranslator
 }
 
