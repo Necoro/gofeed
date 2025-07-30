@@ -2,10 +2,10 @@ package gofeed
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"strings"
 
-	jsoniter "github.com/json-iterator/go"
 	"github.com/Necoro/gofeed/internal/shared"
 	xpp "github.com/mmcdole/goxpp"
 )
@@ -72,7 +72,7 @@ func DetectFeedType(feed io.Reader) FeedType {
 		}
 	} else if firstChar == '{' {
 		// Check if document is valid JSON
-		if jsoniter.Valid(buffer.Bytes()) {
+		if json.Valid(buffer.Bytes()) {
 			return FeedTypeJSON
 		}
 	}
